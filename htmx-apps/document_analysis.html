@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📄 Document Analysis</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 60px; height: 60px; left: 15%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 80px; height: 80px; left: 25%; animation-delay: 1.5s; }
+        .particle:nth-child(3) { width: 40px; height: 40px; left: 35%; animation-delay: 3s; }
+        .particle:nth-child(4) { width: 70px; height: 70px; left: 45%; animation-delay: 4.5s; }
+        .particle:nth-child(5) { width: 50px; height: 50px; left: 55%; animation-delay: 2s; }
+        .particle:nth-child(6) { width: 90px; height: 90px; left: 65%; animation-delay: 3.5s; }
+        .particle:nth-child(7) { width: 35px; height: 35px; left: 75%; animation-delay: 1s; }
+        .particle:nth-child(8) { width: 65px; height: 65px; left: 85%; animation-delay: 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .analysis-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .analysis-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-card.selected {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .analysis-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .input-methods {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .method-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 2px solid transparent;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .method-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #fbbf24;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .method-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .upload-section, .text-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .file-upload-zone {
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-zone:hover, .file-upload-zone.dragover {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+            transform: scale(1.02);
+        }
+
+        .file-upload-zone h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .file-upload-zone p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .text-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 150px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .text-input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            transform: scale(1.01);
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .analysis-result {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .analysis-result h3 {
+            color: #047857;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 40px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2em; }
+            .analysis-types { grid-template-columns: 1fr 1fr; }
+            .input-methods { flex-direction: column; }
+        }
+    </style>
+    <script>
+        let selectedAnalysisType = 'summary';
+        let currentInputMethod = 'upload';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendStatus();
+            setInterval(checkBackendStatus, 30000);
+            setupDragDrop();
+            selectAnalysisType('summary');
+            showInputMethod('upload');
+        });
+
+        function checkBackendStatus() {
+            fetch('/api/v1/config')
+                .then(response => {
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    if (response.ok) {
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = 'Online';
+                    } else {
+                        statusDot.className = 'status-dot offline';
+                        statusText.textContent = 'Offline';
+                    }
+                })
+                .catch(error => {
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Offline';
+                });
+        }
+
+        function selectAnalysisType(type) {
+            selectedAnalysisType = type;
+            document.querySelectorAll('.analysis-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById(type + '-card').classList.add('selected');
+        }
+
+        function showInputMethod(method) {
+            currentInputMethod = method;
+            document.getElementById('upload-section').style.display = method === 'upload' ? 'block' : 'none';
+            document.getElementById('text-section').style.display = method === 'text' ? 'block' : 'none';
+            
+            document.querySelectorAll('.method-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(method + '-btn').classList.add('active');
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('file-info').innerHTML = `
+                    <div class="file-info">
+                        <strong>📁 ${file.name}</strong><br>
+                        <strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                        <strong>Type:</strong> ${file.type || 'Unknown'}
+                    </div>
+                `;
+            }
+        }
+
+        function setupDragDrop() {
+            const dropZone = document.getElementById('file-upload-zone');
+            
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('file-input').files = files;
+                    handleFileSelect({target: {files: files}});
+                }
+            });
+        }
+
+        function analyzeDocument() {
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput.files[0]) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('analysis_type', selectedAnalysisType);
+
+            document.getElementById('analysis-result').innerHTML = '<div class="loading"><div class="spinner"></div><div>Analyzing document...</div></div>';
+
+            fetch('/analyze-document', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('analysis-result').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('analysis-result').innerHTML = '<div class="error-message">❌ Failed to analyze document. Please try again.</div>';
+            });
+        }
+
+        function analyzeText() {
+            const textInput = document.getElementById('text-input');
+            if (!textInput.value.trim()) {
+                alert('Please enter some text to analyze!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('text', textInput.value);
+            formData.append('analysis_type', selectedAnalysisType);
+
+            document.getElementById('analysis-result').innerHTML = '<div class="loading"><div class="spinner"></div><div>Analyzing text...</div></div>';
+
+            fetch('/analyze-text', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('analysis-result').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('analysis-result').innerHTML = '<div class="error-message">❌ Failed to analyze text. Please try again.</div>';
+            });
+        }
+    </script>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📄 Document Analysis</h1>
+            <div class="status-indicator">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="status-text">Online</span>
+            </div>
+        </div>
+
+        <!-- Analysis Type Selection -->
+        <div class="analysis-types">
+            <div id="summary-card" class="analysis-card" onclick="selectAnalysisType('summary')">
+                <h3>📋 Summary</h3>
+                <p>Get a concise overview</p>
+            </div>
+            <div id="key_points-card" class="analysis-card" onclick="selectAnalysisType('key_points')">
+                <h3>🎯 Key Points</h3>
+                <p>Extract important highlights</p>
+            </div>
+            <div id="questions-card" class="analysis-card" onclick="selectAnalysisType('questions')">
+                <h3>❓ Questions</h3>
+                <p>Generate relevant questions</p>
+            </div>
+            <div id="analysis-card" class="analysis-card" onclick="selectAnalysisType('analysis')">
+                <h3>🔍 Detailed Analysis</h3>
+                <p>Comprehensive breakdown</p>
+            </div>
+        </div>
+
+        <!-- Input Method Selection -->
+        <div class="input-methods">
+            <button id="upload-btn" class="method-btn active" onclick="showInputMethod('upload')">📁 Upload Document</button>
+            <button id="text-btn" class="method-btn" onclick="showInputMethod('text')">📝 Paste Text</button>
+        </div>
+
+        <!-- File Upload Section -->
+        <div id="upload-section" class="upload-section">
+            <div id="file-upload-zone" class="file-upload-zone" onclick="document.getElementById('file-input').click()">
+                <h3>📁 Drop your file here</h3>
+                <p>or click to browse</p>
+                <p style="font-size: 0.9em;">Supported: PDF, DOCX, TXT</p>
+                <button type="button" class="upload-btn">Browse Files</button>
+            </div>
+            <input type="file" id="file-input" accept=".pdf,.docx,.txt" style="display: none;" onchange="handleFileSelect(event)">
+            <div id="file-info"></div>
+            <button onclick="analyzeDocument()" class="analyze-btn">Analyze Document</button>
+        </div>
+
+        <!-- Text Input Section -->
+        <div id="text-section" class="text-section" style="display: none;">
+            <textarea id="text-input" class="text-input" placeholder="Paste your text here for analysis..."></textarea>
+            <button onclick="analyzeText()" class="analyze-btn">Analyze Text</button>
+        </div>
+
+        <!-- Analysis Result -->
+        <div id="analysis-result"></div>
+    </div>
+</body>
+</html>

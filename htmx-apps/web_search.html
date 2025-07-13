@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Web Search</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 7s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 70px; height: 70px; left: 12%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 50px; height: 50px; left: 22%; animation-delay: 1s; }
+        .particle:nth-child(3) { width: 90px; height: 90px; left: 32%; animation-delay: 2s; }
+        .particle:nth-child(4) { width: 60px; height: 60px; left: 42%; animation-delay: 3s; }
+        .particle:nth-child(5) { width: 80px; height: 80px; left: 52%; animation-delay: 4s; }
+        .particle:nth-child(6) { width: 40px; height: 40px; left: 62%; animation-delay: 2.5s; }
+        .particle:nth-child(7) { width: 75px; height: 75px; left: 72%; animation-delay: 1.5s; }
+        .particle:nth-child(8) { width: 55px; height: 55px; left: 82%; animation-delay: 3.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .search-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .search-input-group {
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 18px 25px;
+            border-radius: 25px;
+            font-size: 18px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .results-selector {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 18px 20px;
+            border-radius: 15px;
+            font-size: 16px;
+            outline: none;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+        }
+
+        .search-results {
+            margin-top: 20px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card h4 {
+            color: #dc2626;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .result-card p {
+            color: #374151;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .result-card a {
+            color: #f97316;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .result-card a:hover {
+            color: #ea580c;
+            text-decoration: underline;
+        }
+
+        .ai-analysis {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-left: 5px solid #f97316;
+        }
+
+        .ai-analysis h3 {
+            color: #dc2626;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-analysis h4 {
+            color: #ea580c;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .warning-message {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2em; }
+            .search-form { flex-direction: column; }
+            .search-input, .results-selector, .search-btn { width: 100%; }
+        }
+    </style>
+    <script>
+        let lastSearchTime = 0;
+        const MIN_SEARCH_INTERVAL = 3000;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendStatus();
+            setInterval(checkBackendStatus, 30000);
+        });
+
+        function checkBackendStatus() {
+            fetch('/api/v1/config')
+                .then(response => {
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    if (response.ok) {
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = 'Online';
+                    } else {
+                        statusDot.className = 'status-dot offline';
+                        statusText.textContent = 'Offline';
+                    }
+                })
+                .catch(error => {
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Offline';
+                });
+        }
+
+        function performSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            const maxResults = document.getElementById('max-results').value;
+            
+            if (!query) {
+                alert('Please enter a search query!');
+                return;
+            }
+
+            const currentTime = Date.now();
+            const timeSinceLastSearch = currentTime - lastSearchTime;
+            
+            if (timeSinceLastSearch < MIN_SEARCH_INTERVAL) {
+                const remaining = (MIN_SEARCH_INTERVAL - timeSinceLastSearch) / 1000;
+                document.getElementById('search-results').innerHTML = `
+                    <div class="warning-message">
+                        ⏳ Please wait ${remaining.toFixed(1)} more seconds before searching again.
+                    </div>
+                `;
+                return;
+            }
+            
+            lastSearchTime = currentTime;
+
+            document.getElementById('search-results').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>Searching the web...</div>
+                </div>
+            `;
+
+            const formData = new FormData();
+            formData.append('query', query);
+            formData.append('max_results', maxResults);
+
+            fetch('/web-search', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('search-results').innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById('search-results').innerHTML = `
+                    <div class="error-message">
+                        ❌ Search failed. Please try again.
+                    </div>
+                `;
+            });
+        }
+
+        // Allow Enter key to trigger search
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.activeElement.id === 'search-input') {
+                performSearch();
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Web Search</h1>
+            <div class="status-indicator">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="status-text">Online</span>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-form">
+                <div class="search-input-group">
+                    <input 
+                        type="text" 
+                        id="search-input"
+                        class="search-input" 
+                        placeholder="Search the web with AI insights..."
+                    >
+                </div>
+                <select id="max-results" class="results-selector">
+                    <option value="3">3 Results</option>
+                    <option value="5" selected>5 Results</option>
+                    <option value="8">8 Results</option>
+                </select>
+                <button onclick="performSearch()" class="search-btn">🔍 Search</button>
+            </div>
+        </div>
+
+        <div id="search-results"></div>
+    </div>
+</body>
+</html>

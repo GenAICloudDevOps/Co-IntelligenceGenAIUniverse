@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI Chat</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 60px; height: 60px; left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { width: 40px; height: 40px; left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { width: 100px; height: 100px; left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { width: 50px; height: 50px; left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { width: 70px; height: 70px; left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { width: 30px; height: 30px; left: 70%; animation-delay: 0.5s; }
+        .particle:nth-child(8) { width: 90px; height: 90px; left: 80%; animation-delay: 1.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .chat-container {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            display: inline-block;
+            padding: 15px 20px;
+            border-radius: 20px 20px 5px 20px;
+            max-width: 70%;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .message.assistant .message-bubble {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1f2937;
+            display: inline-block;
+            padding: 15px 20px;
+            border-radius: 20px 20px 20px 5px;
+            max-width: 70%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .message-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .clear-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header h1 { font-size: 2em; }
+            .input-container { flex-direction: column; }
+            .message.user .message-bubble,
+            .message.assistant .message-bubble { max-width: 90%; }
+        }
+    </style>
+    <script>
+        let statusCheckInterval;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkBackendStatus();
+            statusCheckInterval = setInterval(checkBackendStatus, 30000);
+        });
+
+        function checkBackendStatus() {
+            fetch('/api/v1/config')
+                .then(response => {
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    if (response.ok) {
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = 'Online';
+                    } else {
+                        statusDot.className = 'status-dot offline';
+                        statusText.textContent = 'Offline';
+                    }
+                })
+                .catch(error => {
+                    const statusDot = document.getElementById('status-dot');
+                    const statusText = document.getElementById('status-text');
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Offline';
+                });
+        }
+
+        function clearChat() {
+            document.getElementById('chat-messages').innerHTML = '';
+            document.getElementById('message-input').value = '';
+        }
+
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chat-messages');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === 'chat-messages') {
+                scrollToBottom();
+            }
+        });
+
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            if (evt.detail.elt.id === 'chat-form') {
+                const chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML += '<div class="loading"><div class="spinner"></div>Thinking...</div>';
+                scrollToBottom();
+            }
+        });
+    </script>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Chat</h1>
+            <div class="status-indicator">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="status-text">Online</span>
+            </div>
+        </div>
+
+        <div id="chat-messages" class="chat-container">
+            <!-- Messages will appear here -->
+        </div>
+
+        <div class="input-container">
+            <form id="chat-form" hx-post="/chat" hx-target="#chat-messages" hx-swap="beforeend" hx-on::after-request="this.reset(); document.querySelector('.loading')?.remove();">
+                <input 
+                    type="text" 
+                    name="message" 
+                    id="message-input"
+                    class="message-input" 
+                    placeholder="Ask me anything..."
+                    required
+                    autocomplete="off"
+                >
+                <button type="submit" class="send-btn">Send</button>
+            </form>
+        </div>
+        
+        <button onclick="clearChat()" class="clear-btn">Clear Chat</button>
+    </div>
+</body>
+</html>
