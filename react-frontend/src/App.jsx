@@ -306,7 +306,7 @@ function App() {
             </span>
           </h2>
           <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto leading-relaxed`}>
-            A modular, production-ready platform built with React, FastAPI, Streamlit, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture.
+            A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture.
           </p>
           <p className={`text-lg font-medium ${darkMode ? 'text-indigo-300' : 'text-indigo-600'} mt-4 flex items-center justify-center space-x-2`}>
             <span>⚡</span>
@@ -433,7 +433,7 @@ function App() {
             {[
               { icon: Rocket, title: 'React Frontend', desc: 'Modern, responsive interface', color: 'from-blue-500 to-blue-600' },
               { icon: Zap, title: 'FastAPI Backend', desc: 'High-performance API with auto-docs', color: 'from-yellow-500 to-orange-600' },
-              { icon: Brain, title: 'Rapid AI Development', desc: 'AWS Bedrock integration with rapid Streamlit development', color: 'from-purple-500 to-pink-600' },
+              { icon: Brain, title: 'Rapid AI Development', desc: 'AWS Bedrock integration with rapid HTMX development', color: 'from-purple-500 to-pink-600' },
               { icon: Layers, title: 'Modular Architecture', desc: 'Scalable, maintainable design with independent components', color: 'from-teal-500 to-cyan-600' },
               { icon: Brain, title: 'Co-Intelligence', desc: 'Collaborative intelligence combining human insight and AI', color: 'from-amber-500 to-orange-600' }
             ].map((feature, index) => (
@@ -516,7 +516,7 @@ function App() {
             <div className={`flex items-center justify-center space-x-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               <span>Built with</span>
               <Heart className="h-4 w-4 text-red-500" />
-              <span>using React, FastAPI, Streamlit & AWS Bedrock</span>
+              <span>using React, FastAPI, HTMX & AWS Bedrock</span>
             </div>
           </div>
         </div>

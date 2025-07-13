@@ -71,8 +71,8 @@ echo "🎨 Testing Frontend:"
 test_url "$BASE_URL:3000" "React Landing Page"
 echo ""
 
-# Test Streamlit apps
-echo "🤖 Testing Streamlit Apps:"
+# Test HTMX apps
+echo "🤖 Testing HTMX Apps:"
 test_url "$BASE_URL:8501" "AI Chat App"
 test_url "$BASE_URL:8502" "Document Analysis App"
 test_url "$BASE_URL:8503" "Web Search App"
@@ -158,5 +158,5 @@ if [ "$ENVIRONMENT" = "cloud" ]; then
     echo "   Make sure your EC2 Security Group allows inbound traffic on:"
     echo "   - Port 3000 (Frontend)"
     echo "   - Port 8000 (Backend API)"
-    echo "   - Ports 8501-8503 (Streamlit Apps)"
+    echo "   - Ports 8501-8503 (HTMX Apps)"
 fi

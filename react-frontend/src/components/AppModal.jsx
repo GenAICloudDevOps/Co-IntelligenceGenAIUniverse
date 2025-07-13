@@ -167,7 +167,7 @@ const AppModal = ({ app, isOpen, onClose, onLaunch }) => {
                     </>
                   ) : (
                     <>
-                      <strong>📊 Streamlit Interface:</strong> Interactive web application with real-time updates
+                      <strong>🎨 HTMX Interface:</strong> Interactive web application with real-time updates
                     </>
                   )}
                 </p>

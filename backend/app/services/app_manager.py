@@ -49,7 +49,7 @@ class AppManager:
                     "category": "ai",
                     "version": "1.0.0",
                     "status": "active",
-                    "type": "streamlit",
+                    "type": "htmx",
                     "port": 8501,
                     "file": "ai_chat.py",
                     "docker_service": "ai-chat"
@@ -63,7 +63,7 @@ class AppManager:
                     "category": "analysis",
                     "version": "1.0.0",
                     "status": "active",
-                    "type": "streamlit",
+                    "type": "htmx",
                     "port": 8502,
                     "file": "document_analysis.py",
                     "docker_service": "document-analysis"
@@ -129,7 +129,7 @@ class AppManager:
         app_data.setdefault("category", "custom")
         app_data.setdefault("version", "1.0.0")
         app_data.setdefault("status", "active")
-        app_data.setdefault("type", "streamlit")
+        app_data.setdefault("type", "htmx")
         app_data.setdefault("url", f"http://localhost:{app_data['port']}")
         app_data.setdefault("docker_service", app_data["id"])
         

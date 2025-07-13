@@ -3,7 +3,7 @@
 
 **Where Human Meets AI Intelligence - Now with Cloud Deployment Support**
 
-A modular, production-ready platform built with React, FastAPI, Streamlit, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture that works seamlessly in both local and cloud environments.
+A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture that works seamlessly in both local and cloud environments.
 
 ⚡ **From concept to live AI app in under 3 minutes - anywhere***
 
@@ -11,7 +11,7 @@ A modular, production-ready platform built with React, FastAPI, Streamlit, and A
 
 - **🚀 React Frontend** - Modern, responsive interface with dark/light themes
 - **⚡ FastAPI Backend** - High-performance API with auto-docs
-- **🧠 Rapid AI Development** - AWS Bedrock integration with rapid Streamlit development
+- **🧠 Rapid AI Development** - AWS Bedrock integration with rapid HTMX development
 - **🏗️ Modular Architecture** - Scalable, maintainable design with independent components
 - **🤖 Co-Intelligence** - Collaborative intelligence combining human insight and AI
 - **🌍 Environment-Aware** - Seamless deployment on local machines and cloud (EC2)
@@ -47,8 +47,8 @@ A modular, production-ready platform built with React, FastAPI, Streamlit, and A
 
 ```
 ┌─────────────────┐    Launch App    ┌──────────────────┐
-│   React         │ ──────────────► │   Streamlit      │
-│   Landing Page  │                 │   AI Apps        │
+│   React         │ ──────────────► │   HTMX Apps      │
+│   Landing Page  │                 │   Beautiful UI   │
 │   (Port 3000)   │                 │   (Port 8501+)   │
 └─────────────────┘                 └──────────────────┘
          │                                    │
@@ -63,7 +63,7 @@ A modular, production-ready platform built with React, FastAPI, Streamlit, and A
          ▼
 ┌──────────────────┐
 │   AWS Bedrock    │
-│   Converse API   │
+│   Claude 3 Haiku │
 └──────────────────┘
 ```
 
@@ -227,10 +227,11 @@ Co-IntelligenceGenAIUniverse/
 │   │   ├── services/       # Business logic (Bedrock service)
 │   │   └── main.py         # FastAPI application
 ├── react-frontend/         # React landing page
-├── apps/                   # Streamlit applications
-│   ├── ai_chat.py         # AI Chat app
-│   ├── document_analysis.py # Document analysis
-│   └── web_search.py      # Web Search
+├── htmx-apps/              # Beautiful HTMX applications
+│   ├── ai_chat.html        # AI Chat app (Blue theme)
+│   ├── document_analysis.html # Document analysis (Green theme)
+│   ├── web_search.html     # Web Search (Orange theme)
+│   └── server.py           # FastAPI server for HTMX apps
 ├── config/                # Configuration files
 │   └── apps.json          # App registry
 ├── scripts/               # Automation scripts
@@ -250,7 +251,7 @@ Co-IntelligenceGenAIUniverse/
 ./scripts/add-app.py "Weather App" "Weather forecasting with AI" --category utility
 
 # The new app will automatically include:
-# - Complete Streamlit app template
+# - Complete HTMX app template
 # - Docker service configuration
 # - Apps.json configuration update
 # - Health checks and networking
@@ -463,7 +464,7 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Built with ❤️ using React, FastAPI, Streamlit & AWS Bedrock**
+**Built with ❤️ using React, FastAPI, HTMX & AWS Bedrock**
 
 ## 🎉 Quick Commands Summary
 
@@ -509,7 +510,7 @@ curl http://your_ec2_ip:8000/api/v1/config              # Cloud
 - ✅ **Variable-Based URLs** - All URLs use PUBLIC_IP variable for easy switching
 - ✅ **Dual Deployment Methods** - Deploy script or direct Docker Compose commands
 - ✅ **Enhanced Frontend** - Environment-aware React application
-- ✅ **Cloud-Ready Apps** - All Streamlit apps support cloud deployment
+- ✅ **Cloud-Ready Apps** - All HTMX apps support cloud deployment
 - ✅ **Production Optimization** - Separate configurations for dev/prod
 - ✅ **Simplified Workflow** - Just change PUBLIC_IP and deploy
 - ✅ **Enhanced Monitoring** - Environment-specific health checks and metrics

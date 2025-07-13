@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # GenAI Multi-App Platform Deployment Script
-# Environment-aware deployment with React + FastAPI + Streamlit
+# Environment-aware deployment with React + FastAPI + HTMX
 
 set -e
 
@@ -157,7 +157,7 @@ else
     echo "❌ React Landing Page is not responding"
 fi
 
-# Check Streamlit apps
+# Check HTMX apps
 if curl -s $BASE_URL:8501 > /dev/null; then
     echo "✅ AI Chat App is running on $BASE_URL:8501"
 else
@@ -204,7 +204,7 @@ if [ "$DEPLOYMENT_ENV" = "cloud" ]; then
     echo "🔒 Security Note: Make sure your EC2 Security Group allows inbound traffic on ports:"
     echo "   - 3000 (Frontend)"
     echo "   - 8000 (Backend API)"
-    echo "   - 8501-8503 (Streamlit Apps)"
+    echo "   - 8501-8503 (HTMX Apps)"
 fi
 echo ""
 echo "📊 View logs: docker-compose -f $COMPOSE_FILE logs -f"

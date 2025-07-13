@@ -83,8 +83,8 @@ test_api_endpoint "System Stats" "$BASE_URL:8000/api/v1/system/stats"
 echo "🌐 Testing React Frontend..."
 test_service "React Landing Page" "$BASE_URL:3000"
 
-# Test Streamlit Apps
-echo "📱 Testing Streamlit Apps..."
+# Test HTMX Apps
+echo "📱 Testing HTMX Apps..."
 test_service "AI Chat App" "$BASE_URL:8501/_stcore/health"
 test_service "Document Analysis App" "$BASE_URL:8502/_stcore/health"
 test_service "Web Search App" "$BASE_URL:8503/_stcore/health"

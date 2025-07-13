@@ -4,52 +4,37 @@
       "id": "ai-chat",
       "name": "AI Chat",
       "description": "Chat with AI using AWS Bedrock Claude models",
-      "icon": "Calculator",
-      "url": "http://localhost:8501",
+      "icon": "MessageCircle",
       "category": "ai",
-      "version": "1.0.0",
-      "status": "active",
-      "type": "streamlit",
       "port": 8501,
-      "file": "ai_chat.py",
-      "docker_service": "ai-chat",
-      "environment_aware": true
+      "url": "http://localhost:8501",
+      "type": "htmx",
+      "status": "active",
+      "features": ["Real-time chat", "Conversation history", "AWS Bedrock integration"]
     },
     {
       "id": "document-analysis",
       "name": "Document Analysis",
-      "description": "Analyze documents with AI - summaries, key points, and insights",
+      "description": "Analyze documents with AI-powered insights",
       "icon": "FileText",
-      "url": "http://localhost:8502",
       "category": "analysis",
-      "version": "1.0.0",
-      "status": "active",
-      "type": "streamlit",
       "port": 8502,
-      "file": "document_analysis.py",
-      "docker_service": "document-analysis",
-      "environment_aware": true
+      "url": "http://localhost:8502",
+      "type": "htmx",
+      "status": "active",
+      "features": ["PDF/DOCX support", "Multiple analysis types", "AI-powered insights"]
     },
     {
       "id": "web-search",
       "name": "Web Search",
-      "description": "AI-powered web search using DuckDuckGo and AWS Bedrock",
-      "icon": "Activity",
-      "url": "http://localhost:8503",
+      "description": "AI-enhanced web search with intelligent analysis",
+      "icon": "Search",
       "category": "search",
-      "version": "1.0.0",
-      "status": "active",
-      "type": "streamlit",
       "port": 8503,
-      "file": "web_search.py",
-      "docker_service": "web-search",
-      "environment_aware": true
+      "url": "http://localhost:8503",
+      "type": "htmx",
+      "status": "active",
+      "features": ["DuckDuckGo integration", "AI analysis", "Rate limiting"]
     }
-  ],
-  "config": {
-    "version": "2.0.0",
-    "supports_environments": true,
-    "default_host": "localhost",
-    "cloud_host_placeholder": "PUBLIC_IP"
-  }
+  ]
 }
