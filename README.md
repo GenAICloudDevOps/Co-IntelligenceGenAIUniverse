@@ -19,21 +19,29 @@ A modular, production-ready platform built with React, FastAPI, Streamlit, and A
 
 ## 📸 Platform Screenshots
 
-### Main Dashboard
+### Main Dashboard - React Frontend
 ![Main Dashboard](screenshots/1.png)
-*Modern React frontend with real-time system metrics, app status monitoring, and dark theme interface*
+*Modern React frontend with real-time system metrics, app status monitoring, and beautiful dark theme interface*
 
-### Application Overview
+### Application Overview - Launch Center
 ![Application Overview](screenshots/2.png)
-*Complete view of available AI applications with launch capabilities and platform features showcase*
+*Complete view of available AI applications with launch capabilities, featuring the new HTMX apps with floating particles*
 
-### API Documentation
+### API Documentation - Interactive Swagger UI
 ![API Documentation](screenshots/3.png)
 *Interactive Swagger UI showing all available API endpoints for Bedrock AI services and system management*
 
-### Document Analysis App
-![Document Analysis](screenshots/4.png)
-*Streamlit-based document analysis interface with drag-and-drop file upload and multiple analysis options*
+### AI Chat App - Beautiful Blue Theme with Floating Particles
+![AI Chat App](screenshots/4.png)
+*Stunning HTMX AI Chat interface featuring blue gradient background, floating particle animations, modern chat bubbles, and real-time "Online" status indicator*
+
+### Document Analysis App - Beautiful Green Theme with Floating Particles
+![Document Analysis App](screenshots/5.png)
+*HTMX Document Analysis interface with green gradient background, floating particles, drag-and-drop file upload, colorful analysis type cards, and seamless user experience*
+
+### Web Search App - Beautiful Orange Theme with Floating Particles
+![Web Search App](screenshots/6.png)
+*HTMX Web Search interface featuring orange gradient background, floating particle animations, AI-powered search results, and clean modern design with real-time backend connectivity*
 
 ## 🏗️ Architecture
 
