@@ -23,7 +23,8 @@ import {
   TrendingUp,
   Shield,
   Database,
-  Layers
+  Layers,
+  Monitor
 } from 'lucide-react';
 import { apiService, configService } from './services/api';
 
@@ -431,7 +432,7 @@ function App() {
           <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6 text-center`}>Platform Features</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {[
-              { icon: Rocket, title: 'React Frontend', desc: 'Modern, responsive interface', color: 'from-blue-500 to-blue-600' },
+              { icon: Monitor, title: 'React + HTMX Frontend', desc: 'React dashboard with lightning-fast HTMX applications', color: 'from-blue-500 to-cyan-600' },
               { icon: Zap, title: 'FastAPI Backend', desc: 'High-performance API with auto-docs', color: 'from-yellow-500 to-orange-600' },
               { icon: Brain, title: 'Rapid AI Development', desc: 'AWS Bedrock integration with rapid HTMX development', color: 'from-purple-500 to-pink-600' },
               { icon: Layers, title: 'Modular Architecture', desc: 'Scalable, maintainable design with independent components', color: 'from-teal-500 to-cyan-600' },
