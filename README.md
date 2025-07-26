@@ -33,15 +33,15 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 *Interactive Swagger UI showing all available API endpoints for Bedrock AI services and system management*
 
 ### AI Chat App - Beautiful Blue Theme with Floating Particles
-![AI Chat App](screenshots/4.png)
+![AI Chat App](screenshots/5.png)
 *Stunning HTMX AI Chat interface featuring blue gradient background, floating particle animations, modern chat bubbles, and real-time "Online" status indicator*
 
 ### Document Analysis App - Beautiful Green Theme with Floating Particles
-![Document Analysis App](screenshots/5.png)
+![Document Analysis App](screenshots/6.png)
 *HTMX Document Analysis interface with green gradient background, floating particles, drag-and-drop file upload, colorful analysis type cards, and seamless user experience*
 
 ### Web Search App - Beautiful Orange Theme with Floating Particles
-![Web Search App](screenshots/6.png)
+![Web Search App](screenshots/7.png)
 *HTMX Web Search interface featuring orange gradient background, floating particle animations, AI-powered search results, and clean modern design with real-time backend connectivity*
 
 ## 🏗️ Architecture
