@@ -31,11 +31,11 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 
 ### Authentication System - Secure User Management
 ![Authentication System](screenshots/4.png)
-*Interactive Swagger UI showing all available API endpoints for Bedrock AI services and system management*
+*Complete JWT authentication system with user registration, login, and secure session management for protected AI applications*
 
 ### API Documentation - Interactive Swagger UI
 ![API Documentation](screenshots/3.png)
-*Complete JWT authentication system with user registration, login, and secure session management for protected AI applications*
+*Interactive Swagger UI showing all available API endpoints for Bedrock AI services and system management*
 
 ### AI Chat App - Beautiful Blue Theme with Floating Particles
 ![AI Chat App](screenshots/5.png)
