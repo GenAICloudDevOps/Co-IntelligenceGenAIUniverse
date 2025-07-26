@@ -4,20 +4,18 @@
 
 A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture with secure JWT authentication that works seamlessly in both local and cloud environments.
 
-⚡ **From concept to secure AI app in under 3 minutes - anywhere***
-
 ## 🎯 Platform Features
 
-- **🚀 React Frontend** - Modern, responsive interface with dark/light themes and authentication
+- **🚀 React Frontend** - Modern dashboard with real-time system metrics and beautiful UI
+- **⚡ FastAPI Backend** - High-performance API with auto-docs
+- **🗄️ PostgreSQL Database** - Reliable data persistence with Alembic migrations for user management
+- **🎨 HTMX Applications** - Lightning-fast interactive AI applications with gradient themes
 - **🔐 JWT Authentication** - Secure user registration, login, and session management
-- **⚡ FastAPI Backend** - High-performance API with auto-docs and protected endpoints
-- **🎨 Beautiful HTMX Apps** - Interactive AI applications with gradient themes and floating particles
-- **🧠 Rapid AI Development** - AWS Bedrock integration with beautiful HTMX apps for AI interactions
+- **🐳 Containerized** - Docker-based deployment with health checks and service isolation
+- **☁️ AI/Cloud First** - Built for AWS with intelligent automation and cloud-native architecture
+- **🧠 Rapid AI Development** - AWS Bedrock integration with rapid HTMX development
 - **🏗️ Modular Architecture** - Scalable, maintainable design with independent components
 - **🤖 Co-Intelligence** - Collaborative intelligence combining human insight and AI
-- **🌍 Environment-Aware** - Seamless deployment on local machines and cloud (EC2)
-- **🔄 Auto-Configuration** - Smart environment detection and URL management
-- **📊 Real-time Dashboard** - Live system stats with user metrics and uptime monitoring
 
 ## 📸 Platform Screenshots
 
@@ -271,22 +269,6 @@ Co-IntelligenceGenAIUniverse/
 └── .env                   # Unified environment configuration
 ```
 
-## ➕ Adding New Apps
-
-### Automated App Creation
-```bash
-# Create new apps with full integration
-./scripts/add-app.py "Weather App" "Weather forecasting with AI" --category utility
-
-# The new app will automatically include:
-# - Complete HTMX app template
-# - Docker service configuration
-# - Apps.json configuration update
-# - Health checks and networking
-# - Automatic port assignment
-# - React frontend integration
-```
-
 ## 🎨 Enhanced Frontend Features
 
 ### 🌙 Dark/Light Mode
@@ -404,7 +386,6 @@ REACT_APP_WEB_SEARCH_URL=http://${PUBLIC_IP}:8503
 - **⚡ Rapid Development** - New AI apps in under 3 minutes
 - **🤖 Co-Intelligence** - Human-AI collaborative experiences
 - **🐳 Container-Based** - Docker orchestration with health checks
-- **📈 Auto-Scaling** - Independent service scaling
 - **🎨 Modern UI** - Professional React interface with themes
 - **🔧 Developer Friendly** - Hot reload, comprehensive tooling
 - **🌍 Environment Agnostic** - Works seamlessly local and cloud
