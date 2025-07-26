@@ -28,7 +28,10 @@ import {
   User,
   LogIn,
   LogOut,
-  UserPlus
+  UserPlus,
+  MessageCircle,
+  Bot,
+  Cloud
 } from 'lucide-react';
 import { apiService, configService } from './services/api';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -460,11 +463,7 @@ function AppContent() {
             </span>
           </h2>
           <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto leading-relaxed`}>
-            A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture with secure JWT authentication.
-          </p>
-          <p className={`text-lg font-medium ${darkMode ? 'text-indigo-300' : 'text-indigo-600'} mt-4 flex items-center justify-center space-x-2`}>
-            <span>⚡</span>
-            <span>From concept to live AI app in under 3 minutes*</span>
+            A modular, production-ready containerized platform built with React, FastAPI, HTMX, PostgreSQL, and AWS Bedrock - enabling rapid co-intelligence development with secure JWT authentication.
           </p>
         </div>
 
@@ -710,9 +709,14 @@ function AppContent() {
           <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6 text-center`}>Platform Features</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {[
-              { icon: Monitor, title: 'React + HTMX Frontend', desc: 'React dashboard with lightning-fast HTMX applications', color: 'from-blue-500 to-cyan-600' },
+              { icon: Monitor, title: 'React Frontend', desc: 'Modern dashboard with real-time system metrics and beautiful UI', color: 'from-blue-500 to-cyan-600' },
               { icon: Zap, title: 'FastAPI Backend', desc: 'High-performance API with auto-docs', color: 'from-yellow-500 to-orange-600' },
-              { icon: Brain, title: 'Rapid AI Development', desc: 'AWS Bedrock integration with rapid HTMX development', color: 'from-purple-500 to-pink-600' },
+              { icon: Database, title: 'PostgreSQL Database', desc: 'Reliable data persistence with Alembic migrations for user management', color: 'from-blue-500 to-teal-600' },
+              { icon: Sparkles, title: 'HTMX Applications', desc: 'Lightning-fast interactive AI applications with gradient themes', color: 'from-indigo-500 to-purple-600' },
+              { icon: Shield, title: 'JWT Authentication', desc: 'Secure user registration, login, and session management', color: 'from-green-500 to-emerald-600' },
+              { icon: Server, title: 'Containerized', desc: 'Docker-based deployment with health checks and service isolation', color: 'from-gray-500 to-slate-600' },
+              { icon: Cloud, title: 'AI/Cloud First', desc: 'Built for AWS with intelligent automation and cloud-native architecture', color: 'from-sky-500 to-blue-600' },
+              { icon: Brain, title: 'Rapid AI Development*', desc: 'AWS Bedrock integration with rapid HTMX development', color: 'from-purple-500 to-pink-600' },
               { icon: Layers, title: 'Modular Architecture', desc: 'Scalable, maintainable design with independent components', color: 'from-teal-500 to-cyan-600' },
               { icon: Brain, title: 'Co-Intelligence', desc: 'Collaborative intelligence combining human insight and AI', color: 'from-amber-500 to-orange-600' }
             ].map((feature, index) => (
@@ -763,7 +767,7 @@ function AppContent() {
               rel="noopener noreferrer"
               className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg transition-colors flex items-center space-x-2"
             >
-              <Brain className="h-5 w-5" />
+              <Bot className="h-5 w-5" />
               <span>AI Chat</span>
             </a>
             <a
