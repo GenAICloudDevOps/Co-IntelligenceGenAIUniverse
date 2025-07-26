@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, File, UploadFile, HTTPException
+from fastapi import FastAPI, Form, File, UploadFile, HTTPException, Header
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 import requests
@@ -6,7 +6,7 @@ import os
 import asyncio
 import time
 from duckduckgo_search import DDGS
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 app = FastAPI(title="HTMX Apps Server")
 
@@ -23,6 +23,26 @@ SEARCH_COOLDOWN = 3  # seconds
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+def get_auth_headers(authorization: Optional[str] = None):
+    """Extract and format authorization headers for backend API calls"""
+    if authorization and authorization.startswith('Bearer '):
+        return {"Authorization": authorization}
+    return {}
+
+def make_authenticated_request(method, url, auth_header=None, **kwargs):
+    """Make authenticated request to backend API"""
+    headers = kwargs.get('headers', {})
+    if auth_header:
+        headers.update(get_auth_headers(auth_header))
+    kwargs['headers'] = headers
+    
+    if method.upper() == 'POST':
+        return requests.post(url, **kwargs)
+    elif method.upper() == 'GET':
+        return requests.get(url, **kwargs)
+    else:
+        raise ValueError(f"Unsupported HTTP method: {method}")
 
 @app.get("/health")
 async def health_check():
@@ -60,7 +80,10 @@ async def get_config():
         raise HTTPException(status_code=503, detail=f"Backend connection failed: {str(e)}")
 
 @app.post("/chat")
-async def chat(message: str = Form(...)):
+async def chat(
+    message: str = Form(...),
+    authorization: Optional[str] = Header(None)
+):
     """Handle chat requests"""
     try:
         # Get conversation history for this session (simplified)
@@ -68,9 +91,11 @@ async def chat(message: str = Form(...)):
         if session_id not in conversations:
             conversations[session_id] = []
         
-        # Call backend API
-        response = requests.post(
+        # Call backend API with authentication
+        response = make_authenticated_request(
+            'POST',
             f"{API_BASE_URL}/api/v1/bedrock/chat",
+            auth_header=authorization,
             json={
                 "message": message,
                 "conversation_history": conversations[session_id]
@@ -118,11 +143,17 @@ async def chat(message: str = Form(...)):
         """)
 
 @app.post("/analyze-text")
-async def analyze_text(text: str = Form(...), analysis_type: str = Form("summary")):
+async def analyze_text(
+    text: str = Form(...), 
+    analysis_type: str = Form("summary"),
+    authorization: Optional[str] = Header(None)
+):
     """Handle text analysis requests"""
     try:
-        response = requests.post(
+        response = make_authenticated_request(
+            'POST',
             f"{API_BASE_URL}/api/v1/bedrock/analyze-text",
+            auth_header=authorization,
             json={
                 "text": text,
                 "analysis_type": analysis_type
@@ -160,15 +191,21 @@ async def analyze_text(text: str = Form(...), analysis_type: str = Form("summary
         """)
 
 @app.post("/analyze-document")
-async def analyze_document(file: UploadFile = File(...), analysis_type: str = Form("summary")):
+async def analyze_document(
+    file: UploadFile = File(...), 
+    analysis_type: str = Form("summary"),
+    authorization: Optional[str] = Header(None)
+):
     """Handle document analysis requests"""
     try:
         # Forward file to backend
         files = {"file": (file.filename, await file.read(), file.content_type)}
         data = {"analysis_type": analysis_type}
         
-        response = requests.post(
+        response = make_authenticated_request(
+            'POST',
             f"{API_BASE_URL}/api/v1/bedrock/analyze-document",
+            auth_header=authorization,
             files=files,
             data=data,
             timeout=60
@@ -227,8 +264,8 @@ async def search_web_with_retry(query: str, max_results: int = 5, max_retries: i
             else:
                 raise e
 
-async def get_ai_analysis(search_results: List[Dict], query: str) -> str:
-    """Get AI analysis of search results"""
+async def get_ai_analysis_with_auth(search_results: List[Dict], query: str, authorization: Optional[str] = None) -> str:
+    """Get AI analysis of search results with authentication"""
     try:
         # Prepare search results for AI analysis
         results_text = "\n\n".join([
@@ -250,8 +287,10 @@ async def get_ai_analysis(search_results: List[Dict], query: str) -> str:
         4. Any notable trends or developments
         """
         
-        response = requests.post(
+        response = make_authenticated_request(
+            'POST',
             f"{API_BASE_URL}/api/v1/bedrock/analyze-text",
+            auth_header=authorization,
             json={
                 "text": analysis_prompt,
                 "analysis_type": "analysis"
@@ -262,13 +301,21 @@ async def get_ai_analysis(search_results: List[Dict], query: str) -> str:
         if response.status_code == 200:
             return response.json()["analysis"]
         else:
-            return f"AI Analysis Error: {response.status_code} - {response.text}"
+            return f"AI Analysis unavailable (Status: {response.status_code}). Please ensure you are logged in."
             
     except Exception as e:
         return f"AI Analysis Error: {str(e)}"
 
+async def get_ai_analysis(search_results: List[Dict], query: str) -> str:
+    """Get AI analysis of search results (legacy function for backward compatibility)"""
+    return await get_ai_analysis_with_auth(search_results, query, None)
+
 @app.post("/web-search")
-async def web_search_endpoint(query: str = Form(...), max_results: int = Form(5)):
+async def web_search_endpoint(
+    query: str = Form(...), 
+    max_results: int = Form(5),
+    authorization: Optional[str] = Header(None)
+):
     """Handle web search requests"""
     try:
         # Perform web search with rate limiting
@@ -281,8 +328,8 @@ async def web_search_endpoint(query: str = Form(...), max_results: int = Form(5)
                 </div>
             """)
         
-        # Get AI analysis
-        ai_analysis = await get_ai_analysis(search_results, query)
+        # Get AI analysis with authentication
+        ai_analysis = await get_ai_analysis_with_auth(search_results, query, authorization)
         
         # Build HTML response with beautiful styling
         html_parts = [f'<div class="success-message">✅ Found {len(search_results)} results</div>']

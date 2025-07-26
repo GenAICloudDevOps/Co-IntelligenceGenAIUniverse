@@ -1,6 +1,7 @@
 fastapi==0.104.1
 uvicorn==0.24.0
 pydantic==2.5.0
+pydantic[email]==2.5.0
 boto3==1.34.0
 python-multipart==0.0.6
 python-dotenv==1.0.0
@@ -8,3 +9,15 @@ requests==2.31.0
 aiofiles==23.2.1
 PyPDF2==3.0.1
 python-docx==1.1.0
+psutil==5.9.6
+
+# PostgreSQL and Database - Fixed compatibility
+asyncpg==0.29.0
+databases[postgresql]==0.7.0
+sqlalchemy==1.4.53
+alembic==1.13.1
+psycopg2-binary==2.9.9
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4

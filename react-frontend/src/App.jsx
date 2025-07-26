@@ -24,11 +24,28 @@ import {
   Shield,
   Database,
   Layers,
-  Monitor
+  Monitor,
+  User,
+  LogIn,
+  LogOut,
+  UserPlus
 } from 'lucide-react';
 import { apiService, configService } from './services/api';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AuthModal from './components/auth/AuthModal';
+import UserProfile from './components/user/UserProfile';
 
+// Main App Component wrapped with AuthProvider
 function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+// App Content Component that uses authentication
+function AppContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [apps, setApps] = useState([]);
@@ -48,6 +65,15 @@ function App() {
       web_search: 'http://localhost:8503'
     }
   });
+
+  // Authentication state
+  const { user, isAuthenticated, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  
+  // Notification state
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     // Initialize environment configuration first
@@ -122,15 +148,42 @@ function App() {
           console.warn('Apps fetch failed:', err.message);
           return { apps: [] };
         }),
-        apiService.getSystemStats().catch(err => {
-          console.warn('Stats fetch failed:', err.message);
-          return { stats: {} };
-        })
+        // Fetch system stats - try authenticated first, fallback to public if it fails
+        isAuthenticated ? 
+          fetch(`${environmentInfo.urls.backend}/api/v1/system/stats`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }).then(res => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              // If authenticated call fails, fallback to public stats
+              console.warn('Authenticated stats failed, falling back to public stats');
+              return fetch(`${environmentInfo.urls.backend}/api/v1/system/stats/public`)
+                .then(res => res.ok ? res.json() : {});
+            }
+          }).catch(err => {
+            console.warn('Authenticated stats fetch failed:', err.message, '- falling back to public stats');
+            // Fallback to public stats if authenticated call fails
+            return fetch(`${environmentInfo.urls.backend}/api/v1/system/stats/public`)
+              .then(res => res.ok ? res.json() : {})
+              .catch(fallbackErr => {
+                console.warn('Public stats fallback also failed:', fallbackErr.message);
+                return {};
+              });
+          }) :
+          fetch(`${environmentInfo.urls.backend}/api/v1/system/stats/public`)
+            .then(res => res.ok ? res.json() : {})
+            .catch(err => {
+              console.warn('Public stats fetch failed:', err.message);
+              return {};
+            })
       ]);
 
       setSystemHealth(healthData);
       setApps(appsData.apps || []);
-      setSystemStats(statsData.stats || {});
+      setSystemStats(statsData || {}); // statsData is now the direct response
 
       setLastUpdated(new Date());
       setLoading(false);
@@ -143,11 +196,22 @@ function App() {
     }
   };
 
+  // Notification function
+  const showNotification = (message, type = 'info') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 4000); // Auto-hide after 4 seconds
+  };
+
   const handleLaunchApp = (app) => {
     // Use environment-aware URL from app configuration or fallback to environment info
     const appUrl = app.url || getEnvironmentAwareUrl(app.port);
     console.log(`🚀 Launching app: ${app.name} at ${appUrl}`);
-    window.open(appUrl, '_blank', 'noopener,noreferrer');
+    
+    // Pass the JWT token as a URL parameter if user is authenticated
+    const token = localStorage.getItem('token');
+    const finalUrl = token ? `${appUrl}?token=${encodeURIComponent(token)}` : appUrl;
+    
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
   };
 
   const getEnvironmentAwareUrl = (port) => {
@@ -202,29 +266,36 @@ function App() {
   const stats = [
     {
       title: 'Total Apps',
-      value: systemStats?.total_apps || apps.length,
+      value: systemStats?.apps?.total || apps.length,
       icon: Rocket,
       color: 'from-blue-500 to-blue-600',
       bgColor: darkMode ? 'bg-blue-900/20' : 'bg-blue-50'
     },
     {
       title: 'Active Apps',
-      value: systemStats?.active_apps || apps.filter(app => app.status === 'active').length,
+      value: systemStats?.apps?.active || apps.filter(app => app.status === 'active').length,
       icon: CheckCircle,
       color: 'from-green-500 to-green-600',
       bgColor: darkMode ? 'bg-green-900/20' : 'bg-green-50'
     },
     {
       title: 'AI Models',
-      value: '2',
+      value: systemStats?.ai_models?.count || 3,
       icon: Brain,
       color: 'from-purple-500 to-purple-600',
       bgColor: darkMode ? 'bg-purple-900/20' : 'bg-purple-50'
     },
     {
+      title: 'Users',
+      value: systemStats?.users?.total || 0,
+      icon: User,
+      color: 'from-indigo-500 to-indigo-600',
+      bgColor: darkMode ? 'bg-indigo-900/20' : 'bg-indigo-50'
+    },
+    {
       title: 'Uptime',
-      value: '99.9%',
-      icon: TrendingUp,
+      value: systemStats?.uptime?.formatted || 'Unknown',
+      icon: Clock,
       color: 'from-emerald-500 to-emerald-600',
       bgColor: darkMode ? 'bg-emerald-900/20' : 'bg-emerald-50'
     }
@@ -248,20 +319,27 @@ function App() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* System Status */}
               <div className="flex items-center space-x-2">
                 <div className={`h-2 w-2 rounded-full ${systemHealth ? 'bg-green-400' : 'bg-red-400'}`}></div>
                 <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                   {systemHealth ? 'Online' : 'Offline'}
                 </span>
               </div>
+              
+              {/* Environment Info */}
               {environmentInfo && (
                 <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} hidden sm:block`}>
                   {environmentInfo.deployment_env === 'cloud' ? '☁️ Cloud' : '🏠 Local'}
                 </div>
               )}
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              
+              {/* Last Updated */}
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} hidden md:block`}>
                 Updated: {lastUpdated.toLocaleTimeString()}
               </div>
+              
+              {/* Action Buttons */}
               <button
                 onClick={() => setShowManagement(!showManagement)}
                 className={`p-2 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
@@ -283,6 +361,81 @@ function App() {
               >
                 <RefreshCw className="h-5 w-5" />
               </button>
+
+              {/* Separator */}
+              <div className={`h-6 w-px ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+
+              {/* Authentication Section - Far Right */}
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowUserProfile(!showUserProfile)}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                        darkMode 
+                          ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      } transition-colors`}
+                      title="User Profile"
+                    >
+                      <User className="h-4 w-4" />
+                      <span className="text-sm font-medium">{user?.name || user?.username}</span>
+                    </button>
+                    
+                    {/* User Profile Dropdown */}
+                    {showUserProfile && (
+                      <div className="absolute right-0 mt-2 w-80 z-50">
+                        <UserProfile onClose={() => setShowUserProfile(false)} />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <button
+                    onClick={logout}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                      darkMode 
+                        ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : 'bg-red-500 hover:bg-red-600 text-white'
+                    } transition-colors`}
+                    title="Logout"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="text-sm font-medium">Logout</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      setAuthMode('login');
+                      setShowAuthModal(true);
+                    }}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                      darkMode 
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                    } transition-colors`}
+                  >
+                    <LogIn className="h-4 w-4" />
+                    <span className="text-sm font-medium">Login</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setAuthMode('register');
+                      setShowAuthModal(true);
+                    }}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg border-2 ${
+                      darkMode 
+                        ? 'border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white' 
+                        : 'border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white'
+                    } transition-colors`}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span className="text-sm font-medium">Register</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -329,6 +482,120 @@ function App() {
                 ×
               </button>
             </div>
+
+            {/* System Information */}
+            {isAuthenticated && systemStats && (
+              <div className="mb-8">
+                <h4 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>System Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  {/* Users */}
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-blue-50'} p-4 rounded-lg border ${darkMode ? 'border-gray-600' : 'border-blue-200'}`}>
+                    <div className="flex items-center space-x-3 mb-2">
+                      <User className="h-5 w-5 text-blue-500" />
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Users</span>
+                    </div>
+                    <div className={`text-2xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                      {systemStats.users?.total || 0}
+                    </div>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {systemStats.users?.active_sessions || 0} active sessions
+                    </div>
+                  </div>
+
+                  {/* Apps */}
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-green-50'} p-4 rounded-lg border ${darkMode ? 'border-gray-600' : 'border-green-200'}`}>
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Rocket className="h-5 w-5 text-green-500" />
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Applications</span>
+                    </div>
+                    <div className={`text-2xl font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                      {systemStats.apps?.active || 0}/{systemStats.apps?.total || 0}
+                    </div>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {systemStats.apps?.inactive || 0} inactive
+                    </div>
+                  </div>
+
+                  {/* AI Models */}
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-purple-50'} p-4 rounded-lg border ${darkMode ? 'border-gray-600' : 'border-purple-200'}`}>
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Brain className="h-5 w-5 text-purple-500" />
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>AI Models</span>
+                    </div>
+                    <div className={`text-2xl font-bold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
+                      {systemStats.ai_models?.count || 0}
+                    </div>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Primary: {systemStats.ai_models?.primary || 'Claude 3 Haiku'}
+                    </div>
+                  </div>
+
+                  {/* Uptime */}
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-emerald-50'} p-4 rounded-lg border ${darkMode ? 'border-gray-600' : 'border-emerald-200'}`}>
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Clock className="h-5 w-5 text-emerald-500" />
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Uptime</span>
+                    </div>
+                    <div className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                      {systemStats.uptime?.formatted || 'Unknown'}
+                    </div>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Since {systemStats.uptime?.started_at ? new Date(systemStats.uptime.started_at).toLocaleDateString() : 'Unknown'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* System Resources */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-4 rounded-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>CPU Usage</span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {systemStats.system?.cpu_usage || '0%'}
+                      </span>
+                    </div>
+                    <div className={`w-full bg-gray-200 rounded-full h-2 ${darkMode ? 'bg-gray-600' : ''}`}>
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: systemStats.system?.cpu_usage || '0%' }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-4 rounded-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Memory Usage</span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {systemStats.system?.memory_usage || '0%'}
+                      </span>
+                    </div>
+                    <div className={`w-full bg-gray-200 rounded-full h-2 ${darkMode ? 'bg-gray-600' : ''}`}>
+                      <div 
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: systemStats.system?.memory_usage || '0%' }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-4 rounded-lg`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Disk Usage</span>
+                      <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {systemStats.system?.disk_usage || '0%'}
+                      </span>
+                    </div>
+                    <div className={`w-full bg-gray-200 rounded-full h-2 ${darkMode ? 'bg-gray-600' : ''}`}>
+                      <div 
+                        className="bg-purple-500 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: systemStats.system?.disk_usage || '0%' }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Management Actions */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-4 rounded-lg`}>
                 <div className="flex items-center space-x-3 mb-3">
@@ -412,8 +679,19 @@ function App() {
                         <Server className={`h-4 w-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                         <span className={`${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Port {app.port}</span>
                       </div>
+                      
+                      {/* Always show Launch button */}
                       <button
-                        onClick={() => handleLaunchApp(app)}
+                        onClick={() => {
+                          if (isAuthenticated) {
+                            handleLaunchApp(app);
+                          } else {
+                            // Show notification and login modal when not authenticated
+                            showNotification('Please login to access AI applications', 'warning');
+                            setAuthMode('login');
+                            setShowAuthModal(true);
+                          }
+                        }}
                         className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2 group-hover:scale-105"
                       >
                         <span>Launch</span>
@@ -450,7 +728,7 @@ function App() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
           {stats.map((stat, index) => (
             <div key={index} className={`${stat.bgColor} rounded-xl p-6 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between">
@@ -522,6 +800,39 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Notification */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className={`px-6 py-4 rounded-lg shadow-lg border-l-4 ${
+            notification.type === 'warning' 
+              ? 'bg-yellow-50 border-yellow-400 text-yellow-800' 
+              : notification.type === 'error'
+              ? 'bg-red-50 border-red-400 text-red-800'
+              : 'bg-blue-50 border-blue-400 text-blue-800'
+          } max-w-sm`}>
+            <div className="flex items-center space-x-3">
+              {notification.type === 'warning' && <AlertCircle className="h-5 w-5 text-yellow-600" />}
+              {notification.type === 'error' && <AlertCircle className="h-5 w-5 text-red-600" />}
+              {notification.type === 'info' && <CheckCircle className="h-5 w-5 text-blue-600" />}
+              <span className="font-medium">{notification.message}</span>
+              <button 
+                onClick={() => setNotification(null)}
+                className="ml-auto text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authMode}
+      />
     </div>
   );
 }

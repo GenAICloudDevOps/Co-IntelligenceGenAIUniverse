@@ -1,6 +1,6 @@
 """
 FastAPI Backend for Co-Intelligence GenAI Universe
-Environment-aware backend with AWS Bedrock integration and dynamic app management
+Environment-aware backend with AWS Bedrock integration, authentication, and dynamic app management
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +11,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from app.api.v1.bedrock import router as bedrock_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1.system import router as system_router
 from app.services.app_manager import AppManager
+from app.database import connect_database, disconnect_database
+from app.core.config import settings
 
 # Load environment variables
 load_dotenv()
@@ -25,45 +29,26 @@ DEBUG = os.getenv("DEBUG", "true").lower() == "true"
 # Create FastAPI app
 app = FastAPI(
     title="Co-Intelligence GenAI Platform API",
-    description="Environment-aware backend API for AI-powered applications with dynamic app management",
-    version="1.0.0",
-    debug=DEBUG
+    description="Environment-aware backend API for AI-powered applications with authentication and dynamic app management",
+    version="2.0.0",
+    debug=settings.DEBUG
 )
 
-# Configure CORS based on environment
-def get_cors_origins():
-    """Get CORS origins based on deployment environment"""
-    if DEPLOYMENT_ENV == "cloud":
-        # Cloud/EC2 deployment
-        origins = [
-            f"http://{PUBLIC_IP}:3000",
-            f"https://{PUBLIC_IP}:3000",
-            f"http://{PUBLIC_IP}:8501",
-            f"http://{PUBLIC_IP}:8502",
-            f"http://{PUBLIC_IP}:8503",
-            "http://localhost:3000",  # Keep localhost for development
-            "http://127.0.0.1:3000",
-        ]
-    else:
-        # Local development
-        origins = [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://localhost:8501",
-            "http://localhost:8502",
-            "http://localhost:8503",
-        ]
-    
-    # Add wildcard for development
-    if DEBUG:
-        origins.append("*")
-    
-    return origins
+# Database event handlers
+@app.on_event("startup")
+async def startup_event():
+    """Connect to database on startup"""
+    await connect_database()
 
-# CORS middleware with environment-aware configuration
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Disconnect from database on shutdown"""
+    await disconnect_database()
+
+# Configure CORS with settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_cors_origins(),
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -73,18 +58,22 @@ app.add_middleware(
 app_manager = AppManager()
 
 # Include routers
+app.include_router(auth_router, prefix="/api/v1", tags=["authentication"])
 app.include_router(bedrock_router, prefix="/api/v1/bedrock", tags=["bedrock"])
+app.include_router(system_router, prefix="/api/v1/system", tags=["system"])
 
 @app.get("/")
 async def root():
     """Root endpoint with environment info"""
     return {
         "message": "Co-Intelligence GenAI Platform API", 
-        "version": "1.0.0",
+        "version": "2.0.0",
         "environment": DEPLOYMENT_ENV,
         "host_ip": HOST_IP,
         "public_ip": PUBLIC_IP if DEPLOYMENT_ENV == "cloud" else "N/A",
-        "debug": DEBUG
+        "debug": DEBUG,
+        "features": ["authentication", "bedrock_ai", "app_management"],
+        "auth_endpoints": ["/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/me"]
     }
 
 @app.get("/health")

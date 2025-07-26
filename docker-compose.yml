@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cointelligence_db}
+      POSTGRES_USER: ${POSTGRES_USER:-cointelligence_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_cointelligence_password_2025}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cointelligence_user} -d ${POSTGRES_DB:-cointelligence_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # FastAPI Backend
   backend:
     build:
@@ -9,26 +29,55 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_DB=${POSTGRES_DB:-cointelligence_db}
+      - POSTGRES_USER=${POSTGRES_USER:-cointelligence_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-secure_cointelligence_password_2025}
+      
+      # Authentication Configuration
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-in-production}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      
+      # AWS Configuration
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
       - BEDROCK_PRIMARY_MODEL=${BEDROCK_PRIMARY_MODEL:-anthropic.claude-3-haiku-20240307-v1:0}
       - BEDROCK_FALLBACK_MODEL=${BEDROCK_FALLBACK_MODEL:-anthropic.claude-3-haiku-20240307-v1:0}
+      
+      # App Configuration
       - API_V1_STR=${API_V1_STR:-/api/v1}
       - PROJECT_NAME=${PROJECT_NAME:-Co-Intelligence GenAI Universe}
       - VERSION=${VERSION:-2.0.0}
       - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-local}
       - HOST_IP=${HOST_IP:-localhost}
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
+      - DEBUG=${DEBUG:-true}
     volumes:
       - ./config:/app/config
     networks:
       - app-network
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+    command: >
+      sh -c "
+        echo 'Waiting for PostgreSQL to be ready...' &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
+        alembic upgrade head &&
+        echo 'Starting FastAPI server...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
 
   # React Frontend
   frontend:
@@ -136,3 +185,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

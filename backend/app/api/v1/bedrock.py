@@ -1,7 +1,7 @@
 """
-Bedrock API endpoints
+Bedrock API endpoints with authentication
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 import PyPDF2
@@ -9,6 +9,7 @@ import docx
 import io
 
 from app.services.bedrock_service import bedrock_service
+from app.middleware.auth_middleware import get_current_active_user, get_current_user_optional
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ class DocumentAnalysisResponse(BaseModel):
     analysis: str
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, current_user: dict = Depends(get_current_active_user)):
     """Simple chat endpoint"""
     try:
         response = await bedrock_service.chat(
@@ -39,7 +40,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/analyze-text", response_model=DocumentAnalysisResponse)
-async def analyze_text(request: DocumentAnalysisRequest):
+async def analyze_text(request: DocumentAnalysisRequest, current_user: dict = Depends(get_current_active_user)):
     """Analyze text document"""
     try:
         analysis = await bedrock_service.analyze_document(
@@ -53,7 +54,8 @@ async def analyze_text(request: DocumentAnalysisRequest):
 @router.post("/analyze-document", response_model=DocumentAnalysisResponse)
 async def analyze_document(
     file: UploadFile = File(...),
-    analysis_type: str = "summary"
+    analysis_type: str = "summary",
+    current_user: dict = Depends(get_current_active_user)
 ):
     """Analyze uploaded document"""
     try:

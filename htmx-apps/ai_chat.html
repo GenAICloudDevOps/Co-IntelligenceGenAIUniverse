@@ -254,8 +254,29 @@
         let statusCheckInterval;
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Extract token from URL parameter and store in localStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (token) {
+                localStorage.setItem('token', token);
+                console.log('✅ Token stored from URL parameter');
+                // Remove token from URL for security
+                const url = new URL(window.location);
+                url.searchParams.delete('token');
+                window.history.replaceState({}, document.title, url);
+            }
+            
             checkBackendStatus();
             statusCheckInterval = setInterval(checkBackendStatus, 30000);
+            
+            // Add JWT token to all HTMX requests
+            document.body.addEventListener('htmx:configRequest', function(evt) {
+                const storedToken = localStorage.getItem('token');
+                if (storedToken) {
+                    evt.detail.headers['Authorization'] = `Bearer ${storedToken}`;
+                }
+            });
         });
 
         function checkBackendStatus() {
