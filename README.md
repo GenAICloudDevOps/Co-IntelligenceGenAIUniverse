@@ -29,11 +29,11 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 ![Platform Features and Dashboard Stats](screenshots/2.png)
 *Complete view of available AI applications with launch capabilities, featuring the new HTMX apps with floating particles*
 
-### Authentication System - Secure User Management
+### API Documentation Interactive Swagger UI
 ![Authentication System](screenshots/4.png)
 *Complete JWT authentication system with user registration, login, and secure session management for protected AI applications*
 
-### API Documentation - Interactive Swagger UI
+### API Documentation - Interactive Swagger UI - Authentication
 ![API Documentation](screenshots/3.png)
 *Interactive Swagger UI showing all available API endpoints for Bedrock AI services and system management*
 
