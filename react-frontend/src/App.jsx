@@ -31,7 +31,8 @@ import {
   UserPlus,
   MessageCircle,
   Bot,
-  Cloud
+  Cloud,
+  MessageSquare
 } from 'lucide-react';
 import { apiService, configService } from './services/api';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -463,7 +464,7 @@ function AppContent() {
             </span>
           </h2>
           <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto leading-relaxed`}>
-            A modular, production-ready containerized platform built with React, FastAPI, HTMX, PostgreSQL, and AWS Bedrock - enabling rapid co-intelligence development with secure JWT authentication.
+            A modular, containerized platform for rapid co-intelligence development with secure authentication and production-ready deployment.
           </p>
         </div>
 
@@ -767,7 +768,7 @@ function AppContent() {
               rel="noopener noreferrer"
               className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-lg transition-colors flex items-center space-x-2"
             >
-              <Bot className="h-5 w-5" />
+              <MessageSquare className="h-5 w-5" />
               <span>AI Chat</span>
             </a>
             <a
