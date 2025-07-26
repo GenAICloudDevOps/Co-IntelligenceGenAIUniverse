@@ -11,7 +11,8 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 - **🚀 React Frontend** - Modern, responsive interface with dark/light themes and authentication
 - **🔐 JWT Authentication** - Secure user registration, login, and session management
 - **⚡ FastAPI Backend** - High-performance API with auto-docs and protected endpoints
-- **🧠 Rapid AI Development** - AWS Bedrock integration with authenticated HTMX development
+- **🎨 Beautiful HTMX Apps** - Interactive AI applications with gradient themes and floating particles
+- **🧠 Rapid AI Development** - AWS Bedrock integration with beautiful HTMX apps for AI interactions
 - **🏗️ Modular Architecture** - Scalable, maintainable design with independent components
 - **🤖 Co-Intelligence** - Collaborative intelligence combining human insight and AI
 - **🌍 Environment-Aware** - Seamless deployment on local machines and cloud (EC2)
@@ -24,8 +25,8 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 ![Main Dashboard](screenshots/1.png)
 *Modern React frontend with real-time system metrics, app status monitoring, and beautiful dark theme interface*
 
-### Application Overview - Launch Center
-![Application Overview](screenshots/2.png)
+### Platform Features and Dashboard Stats
+![Platform Features and Dashboard Stats](screenshots/2.png)
 *Complete view of available AI applications with launch capabilities, featuring the new HTMX apps with floating particles*
 
 ### Authentication System - Secure User Management
