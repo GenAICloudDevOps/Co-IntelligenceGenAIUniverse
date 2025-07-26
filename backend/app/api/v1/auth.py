@@ -12,7 +12,7 @@ from app.services.auth_service import AuthService
 from app.middleware.auth_middleware import get_current_active_user
 from datetime import timedelta
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserRegister):

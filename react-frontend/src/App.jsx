@@ -117,7 +117,7 @@ function AppContent() {
       setEnvironmentInfo(envConfig);
       
       // Update document title based on environment
-      document.title = `Co-Intelligence GenAI Universe - ${envConfig.deployment_env === 'cloud' ? 'Cloud' : 'Local'}`;
+      document.title = `Co-Intelligence GenAI Universe V3.0 - ${envConfig.deployment_env === 'cloud' ? 'Cloud' : 'Local'}`;
       
     } catch (error) {
       console.warn('⚠️ Failed to load environment config, using defaults:', error);
@@ -231,7 +231,7 @@ function AppContent() {
       <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-          <h2 className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'} mb-2`}>Loading Co-Intelligence GenAI Universe</h2>
+          <h2 className={`text-2xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'} mb-2`}>Loading Co-Intelligence GenAI Universe V3.0</h2>
           <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Initializing AI-powered applications...</p>
           {environmentInfo && (
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -315,7 +315,7 @@ function AppContent() {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Co-Intelligence GenAI Universe
                 </h1>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI-Powered Applications</p>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI-Powered Applications V3.0</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">

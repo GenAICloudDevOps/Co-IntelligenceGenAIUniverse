@@ -1,21 +1,22 @@
-# 🚀 Co-Intelligence GenAI Universe
+# 🚀 Co-Intelligence GenAI Universe V3.0
 
+**Where Human Meets AI Intelligence - Now with Full Authentication & Cloud Deployment**
 
-**Where Human Meets AI Intelligence - Now with Cloud Deployment Support**
+A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture with secure JWT authentication that works seamlessly in both local and cloud environments.
 
-A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture that works seamlessly in both local and cloud environments.
-
-⚡ **From concept to live AI app in under 3 minutes - anywhere***
+⚡ **From concept to secure AI app in under 3 minutes - anywhere***
 
 ## 🎯 Platform Features
 
-- **🚀 React Frontend** - Modern, responsive interface with dark/light themes
-- **⚡ FastAPI Backend** - High-performance API with auto-docs
-- **🧠 Rapid AI Development** - AWS Bedrock integration with rapid HTMX development
+- **🚀 React Frontend** - Modern, responsive interface with dark/light themes and authentication
+- **🔐 JWT Authentication** - Secure user registration, login, and session management
+- **⚡ FastAPI Backend** - High-performance API with auto-docs and protected endpoints
+- **🧠 Rapid AI Development** - AWS Bedrock integration with authenticated HTMX development
 - **🏗️ Modular Architecture** - Scalable, maintainable design with independent components
 - **🤖 Co-Intelligence** - Collaborative intelligence combining human insight and AI
 - **🌍 Environment-Aware** - Seamless deployment on local machines and cloud (EC2)
 - **🔄 Auto-Configuration** - Smart environment detection and URL management
+- **📊 Real-time Dashboard** - Live system stats with user metrics and uptime monitoring
 
 ## 📸 Platform Screenshots
 
@@ -80,6 +81,28 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 - **Access:** http://your_ec2_ip:3000
 - **Configuration:** Set PUBLIC_IP in .env file
 - **Features:** Production optimization, auto-restart, security headers
+
+## 🔐 Authentication System (New in V3.0)
+
+### User Management
+- **🔑 User Registration** - Create new accounts with name, email, username, and password
+- **🚪 Secure Login/Logout** - JWT-based authentication with session management
+- **👤 User Profiles** - Complete user information and account management
+- **🔒 Protected Routes** - All AI applications require authentication
+
+### Security Features
+- **🛡️ JWT Tokens** - Secure JSON Web Token authentication
+- **🔄 Token Passing** - Seamless authentication between React frontend and HTMX apps
+- **⏰ Session Management** - Configurable token expiration and refresh
+- **🗄️ Database Integration** - PostgreSQL with Alembic migrations for user data
+- **🔐 Password Security** - Secure password hashing and validation
+
+### Authentication Flow
+1. **Register/Login** → User creates account or logs in via React frontend
+2. **JWT Token** → Backend generates secure JWT token upon successful authentication
+3. **Token Storage** → Frontend stores token securely in localStorage
+4. **App Launch** → Token passed to HTMX apps via URL parameter
+5. **API Requests** → All AI endpoints require valid JWT token in Authorization header
 
 ## 📱 Available Apps
 
@@ -504,13 +527,13 @@ curl http://your_ec2_ip:8000/api/v1/config              # Cloud
 ./scripts/test-system.sh
 ```
 
-## 🌟 New in Version 2.0
+## 🌟 New in Version 3.0
 
-- ✅ **Unified Environment Configuration** - Single .env file for both local and cloud
-- ✅ **Variable-Based URLs** - All URLs use PUBLIC_IP variable for easy switching
-- ✅ **Dual Deployment Methods** - Deploy script or direct Docker Compose commands
-- ✅ **Enhanced Frontend** - Environment-aware React application
-- ✅ **Cloud-Ready Apps** - All HTMX apps support cloud deployment
-- ✅ **Production Optimization** - Separate configurations for dev/prod
-- ✅ **Simplified Workflow** - Just change PUBLIC_IP and deploy
-- ✅ **Enhanced Monitoring** - Environment-specific health checks and metrics
+- ✅ **JWT Authentication System** - Secure user registration, login, and logout functionality
+- ✅ **Protected AI Applications** - All AI apps now require authentication for access
+- ✅ **User Management** - Complete user profile system with session management
+- ✅ **Secure Token Passing** - Seamless authentication between React frontend and HTMX apps
+- ✅ **Dashboard User Stats** - Real-time user count and system metrics display
+- ✅ **Authentication Middleware** - Comprehensive security layer for all API endpoints
+- ✅ **Database Integration** - PostgreSQL with Alembic migrations for user data
+- ✅ **Enhanced Security** - Secure credential management and token validation

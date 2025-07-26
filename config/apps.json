@@ -27,7 +27,7 @@
     {
       "id": "web-search",
       "name": "Web Search",
-      "description": "AI-enhanced web search with intelligent analysis",
+      "description": "AI-enhanced web search",
       "icon": "Search",
       "category": "search",
       "port": 8503,
