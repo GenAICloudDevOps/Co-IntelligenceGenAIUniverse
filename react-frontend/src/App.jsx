@@ -460,7 +460,7 @@ function AppContent() {
             </span>
           </h2>
           <p className={`text-xl ${darkMode ? 'text-gray-300' : 'text-gray-600'} max-w-3xl mx-auto leading-relaxed`}>
-            A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture.
+            A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture with secure JWT authentication.
           </p>
           <p className={`text-lg font-medium ${darkMode ? 'text-indigo-300' : 'text-indigo-600'} mt-4 flex items-center justify-center space-x-2`}>
             <span>⚡</span>
