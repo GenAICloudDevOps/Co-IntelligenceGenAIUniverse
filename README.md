@@ -527,6 +527,32 @@ curl http://your_ec2_ip:8000/api/v1/config              # Cloud
 ./scripts/test-system.sh
 ```
 
+## 🌟 New in Version 1.0
+
+- ✅ **Core Platform Architecture** - React frontend + FastAPI backend + Streamlit apps
+- ✅ **AWS Bedrock Integration** - Claude 3 Haiku AI model integration
+- ✅ **Three AI Applications** - AI Chat, Document Analysis, and Web Search in Streamlit
+- ✅ **Docker Containerization** - Complete Docker Compose setup
+- ✅ **Streamlit UI** - Interactive web applications with Streamlit framework
+- ✅ **Real-time AI Chat** - Conversation history and streaming responses
+- ✅ **Document Processing** - PDF, DOCX, TXT file analysis with multiple analysis types
+- ✅ **Web Search Integration** - DuckDuckGo search with AI analysis
+- ✅ **Interactive API Documentation** - Swagger UI with all endpoints
+- ✅ **Health Monitoring** - System health checks and status indicators
+
+## 🌟 New in Version 2.0
+
+- ✅ **HTMX Migration** - Complete migration from Streamlit to HTMX for all 3 apps
+- ✅ **Beautiful HTMX UI** - Gradient themes with floating particle animations (Blue, Green, Orange)
+- ✅ **Enhanced User Experience** - Modern chat bubbles, drag-and-drop, smooth animations
+- ✅ **Unified Environment Configuration** - Single .env file for both local and cloud
+- ✅ **Variable-Based URLs** - All URLs use PUBLIC_IP variable for easy switching
+- ✅ **Cloud Deployment Support** - EC2 deployment with production configurations
+- ✅ **Enhanced Frontend** - Environment-aware React application
+- ✅ **Production Optimization** - Separate configurations for dev/prod
+- ✅ **Auto-Configuration** - Smart environment detection and URL management
+- ✅ **Improved Performance** - Faster loading and better responsiveness with HTMX
+
 ## 🌟 New in Version 3.0
 
 - ✅ **JWT Authentication System** - Secure user registration, login, and logout functionality
