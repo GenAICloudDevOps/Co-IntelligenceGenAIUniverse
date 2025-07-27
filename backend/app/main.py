@@ -113,11 +113,6 @@ async def get_config():
             "web_search": f"http://{PUBLIC_IP}:8503"
         }
     }
-            "ai_chat": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8501",
-            "document_analysis": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8502",
-            "web_search": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8503"
-        }
-    }
 
 @app.get("/api/v1/apps")
 async def get_apps():
