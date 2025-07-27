@@ -24,7 +24,7 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 *Modern React frontend with real-time system metrics, app status monitoring, and beautiful dark theme interface*
 
 ### Platform Features and Dashboard Stats
-![Platform Features and Dashboard Stats](screenshots/2.png)
+![Platform Features and Dashboard Stats](screenshots/2.jpg)
 *Complete view of available AI applications with launch capabilities, featuring the new HTMX apps with floating particles*
 
 ### API Documentation - Interactive Swagger UI - Authentication
