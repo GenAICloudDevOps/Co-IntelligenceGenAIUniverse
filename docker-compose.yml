@@ -20,6 +20,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   # FastAPI Backend
   backend:
@@ -49,13 +50,14 @@ services:
       - BEDROCK_PRIMARY_MODEL=${BEDROCK_PRIMARY_MODEL:-anthropic.claude-3-haiku-20240307-v1:0}
       - BEDROCK_FALLBACK_MODEL=${BEDROCK_FALLBACK_MODEL:-anthropic.claude-3-haiku-20240307-v1:0}
       
-      # App Configuration
+      # App Configuration - Auto-detect environment based on PUBLIC_IP
       - API_V1_STR=${API_V1_STR:-/api/v1}
       - PROJECT_NAME=${PROJECT_NAME:-Co-Intelligence GenAI Universe}
-      - VERSION=${VERSION:-2.0.0}
-      - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-local}
-      - HOST_IP=${HOST_IP:-localhost}
+      - VERSION=${VERSION:-3.0.0}
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
+      # Auto-detect deployment environment and settings based on PUBLIC_IP
+      - DEPLOYMENT_ENV=${PUBLIC_IP:-localhost}
+      - HOST_IP=0.0.0.0
       - DEBUG=${DEBUG:-true}
     volumes:
       - ./config:/app/config
@@ -69,6 +71,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
     command: >
       sh -c "
         echo 'Waiting for PostgreSQL to be ready...' &&
@@ -76,7 +79,13 @@ services:
         echo 'Running database migrations...' &&
         alembic upgrade head &&
         echo 'Starting FastAPI server...' &&
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        if [ '${PUBLIC_IP:-localhost}' = 'localhost' ]; then
+          echo 'Starting in development mode with reload...'
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+        else
+          echo 'Starting in production mode...'
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+        fi
       "
 
   # React Frontend
@@ -84,20 +93,22 @@ services:
     build:
       context: ./react-frontend
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=http://${PUBLIC_IP:-localhost}:8000/api/v1
+        - REACT_APP_BACKEND_URL=http://${PUBLIC_IP:-localhost}:8000
+        - REACT_APP_AI_CHAT_URL=http://${PUBLIC_IP:-localhost}:8501
+        - REACT_APP_DOCUMENT_ANALYSIS_URL=http://${PUBLIC_IP:-localhost}:8502
+        - REACT_APP_WEB_SEARCH_URL=http://${PUBLIC_IP:-localhost}:8503
+        - PUBLIC_IP=${PUBLIC_IP:-localhost}
     ports:
       - "3000:80"
-    volumes:
-      - ./react-frontend/src:/app/src
-      - ./config:/app/config
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000/api/v1}
-      - REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL:-http://localhost:8000}
-      - REACT_APP_AI_CHAT_URL=${REACT_APP_AI_CHAT_URL:-http://localhost:8501}
-      - REACT_APP_DOCUMENT_ANALYSIS_URL=${REACT_APP_DOCUMENT_ANALYSIS_URL:-http://localhost:8502}
-      - REACT_APP_WEB_SEARCH_URL=${REACT_APP_WEB_SEARCH_URL:-http://localhost:8503}
-      - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-local}
-      - HOST_IP=${HOST_IP:-localhost}
+      - REACT_APP_API_URL=http://${PUBLIC_IP:-localhost}:8000/api/v1
+      - REACT_APP_BACKEND_URL=http://${PUBLIC_IP:-localhost}:8000
+      - REACT_APP_AI_CHAT_URL=http://${PUBLIC_IP:-localhost}:8501
+      - REACT_APP_DOCUMENT_ANALYSIS_URL=http://${PUBLIC_IP:-localhost}:8502
+      - REACT_APP_WEB_SEARCH_URL=http://${PUBLIC_IP:-localhost}:8503
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
     depends_on:
       backend:
@@ -109,6 +120,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
 
   # AI Chat HTMX App
   ai-chat:
@@ -120,8 +132,6 @@ services:
     environment:
       - PORT=8501
       - API_BASE_URL=http://backend:8000
-      - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-local}
-      - HOST_IP=${HOST_IP:-localhost}
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
     depends_on:
       backend:
@@ -133,6 +143,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
 
   # Document Analysis HTMX App
   document-analysis:
@@ -144,8 +155,6 @@ services:
     environment:
       - PORT=8502
       - API_BASE_URL=http://backend:8000
-      - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-local}
-      - HOST_IP=${HOST_IP:-localhost}
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
     depends_on:
       backend:
@@ -157,6 +166,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
 
   # Web Search HTMX App
   web-search:
@@ -168,8 +178,6 @@ services:
     environment:
       - PORT=8503
       - API_BASE_URL=http://backend:8000
-      - DEPLOYMENT_ENV=${DEPLOYMENT_ENV:-local}
-      - HOST_IP=${HOST_IP:-localhost}
       - PUBLIC_IP=${PUBLIC_IP:-localhost}
     depends_on:
       backend:
@@ -181,6 +189,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    restart: unless-stopped
 
 networks:
   app-network:

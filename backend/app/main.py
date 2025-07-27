@@ -20,11 +20,21 @@ from app.core.config import settings
 # Load environment variables
 load_dotenv()
 
-# Get environment configuration
-DEPLOYMENT_ENV = os.getenv("DEPLOYMENT_ENV", "local")
-HOST_IP = os.getenv("HOST_IP", "localhost")
+# Get environment configuration with auto-detection
 PUBLIC_IP = os.getenv("PUBLIC_IP", "localhost")
-DEBUG = os.getenv("DEBUG", "true").lower() == "true"
+
+# Auto-detect deployment environment based on PUBLIC_IP
+if PUBLIC_IP == "localhost" or PUBLIC_IP == "127.0.0.1":
+    DEPLOYMENT_ENV = "local"
+    HOST_IP = "localhost"
+    DEBUG = True
+else:
+    DEPLOYMENT_ENV = "cloud"
+    HOST_IP = "0.0.0.0"
+    DEBUG = False
+
+# Override DEBUG if explicitly set
+DEBUG = os.getenv("DEBUG", str(DEBUG)).lower() == "true"
 
 # Create FastAPI app
 app = FastAPI(
@@ -67,10 +77,10 @@ async def root():
     """Root endpoint with environment info"""
     return {
         "message": "Co-Intelligence GenAI Platform API", 
-        "version": "2.0.0",
+        "version": "3.0.0",
         "environment": DEPLOYMENT_ENV,
         "host_ip": HOST_IP,
-        "public_ip": PUBLIC_IP if DEPLOYMENT_ENV == "cloud" else "N/A",
+        "public_ip": PUBLIC_IP,
         "debug": DEBUG,
         "features": ["authentication", "bedrock_ai", "app_management"],
         "auth_endpoints": ["/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/me"]
@@ -84,7 +94,7 @@ async def health_check():
         "service": "backend", 
         "environment": DEPLOYMENT_ENV,
         "host_ip": HOST_IP,
-        "public_ip": PUBLIC_IP if DEPLOYMENT_ENV == "cloud" else "N/A",
+        "public_ip": PUBLIC_IP,
         "timestamp": str(os.popen('date').read().strip())
     }
 
@@ -94,10 +104,15 @@ async def get_config():
     return {
         "deployment_env": DEPLOYMENT_ENV,
         "host_ip": HOST_IP,
-        "public_ip": PUBLIC_IP if DEPLOYMENT_ENV == "cloud" else HOST_IP,
+        "public_ip": PUBLIC_IP,
         "urls": {
-            "backend": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8000",
-            "frontend": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:3000",
+            "backend": f"http://{PUBLIC_IP}:8000",
+            "frontend": f"http://{PUBLIC_IP}:3000",
+            "ai_chat": f"http://{PUBLIC_IP}:8501",
+            "document_analysis": f"http://{PUBLIC_IP}:8502",
+            "web_search": f"http://{PUBLIC_IP}:8503"
+        }
+    }
             "ai_chat": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8501",
             "document_analysis": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8502",
             "web_search": f"http://{PUBLIC_IP if DEPLOYMENT_ENV == 'cloud' else HOST_IP}:8503"
@@ -110,10 +125,9 @@ async def get_apps():
     try:
         apps = app_manager.get_apps()
         
-        # Update URLs based on environment
+        # Update URLs based on PUBLIC_IP (works for both local and cloud)
         for app in apps:
-            if DEPLOYMENT_ENV == "cloud":
-                app["url"] = app["url"].replace("localhost", PUBLIC_IP)
+            app["url"] = app["url"].replace("localhost", PUBLIC_IP)
             
         return {"apps": apps, "count": len(apps), "environment": DEPLOYMENT_ENV}
     except Exception as e:
@@ -123,8 +137,8 @@ async def get_apps():
 async def add_app(app_data: dict):
     """Add a new app to the configuration"""
     try:
-        # Update URL based on environment
-        if "url" in app_data and DEPLOYMENT_ENV == "cloud":
+        # Update URL based on PUBLIC_IP
+        if "url" in app_data:
             app_data["url"] = app_data["url"].replace("localhost", PUBLIC_IP)
             
         result = app_manager.add_app(app_data)
@@ -140,9 +154,8 @@ async def get_app(app_id: str):
         if not app:
             raise HTTPException(status_code=404, detail="App not found")
             
-        # Update URL based on environment
-        if DEPLOYMENT_ENV == "cloud":
-            app["url"] = app["url"].replace("localhost", PUBLIC_IP)
+        # Update URL based on PUBLIC_IP
+        app["url"] = app["url"].replace("localhost", PUBLIC_IP)
             
         return {"app": app}
     except Exception as e:
@@ -152,8 +165,8 @@ async def get_app(app_id: str):
 async def update_app(app_id: str, app_data: dict):
     """Update an existing app"""
     try:
-        # Update URL based on environment
-        if "url" in app_data and DEPLOYMENT_ENV == "cloud":
+        # Update URL based on PUBLIC_IP
+        if "url" in app_data:
             app_data["url"] = app_data["url"].replace("localhost", PUBLIC_IP)
             
         result = app_manager.update_app(app_id, app_data)
@@ -182,7 +195,7 @@ async def get_system_stats():
             "types": list(set([app.get("type", "unknown") for app in apps])),
             "environment": DEPLOYMENT_ENV,
             "host_ip": HOST_IP,
-            "public_ip": PUBLIC_IP if DEPLOYMENT_ENV == "cloud" else "N/A"
+            "public_ip": PUBLIC_IP
         }
         return {"stats": stats}
     except Exception as e:
