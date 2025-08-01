@@ -712,7 +712,7 @@ function AppContent() {
             {[
               { icon: Monitor, title: 'React Frontend', desc: 'Modern dashboard with real-time system metrics and beautiful UI', color: 'from-blue-500 to-cyan-600' },
               { icon: Zap, title: 'FastAPI Backend', desc: 'High-performance API with auto-docs', color: 'from-yellow-500 to-orange-600' },
-              { icon: Database, title: 'PostgreSQL Database', desc: 'Reliable data persistence with Alembic migrations for user management', color: 'from-blue-500 to-teal-600' },
+              { icon: Database, title: 'PostgreSQL Database', desc: 'Reliable data persistence with Tortoise ORM and Aerich migrations for user management', color: 'from-blue-500 to-teal-600' },
               { icon: Sparkles, title: 'HTMX Applications', desc: 'Lightning-fast interactive AI applications with gradient themes', color: 'from-indigo-500 to-purple-600' },
               { icon: Shield, title: 'JWT Authentication', desc: 'Secure user registration, login, and session management', color: 'from-green-500 to-emerald-600' },
               { icon: Server, title: 'Containerized', desc: 'Docker-based deployment with health checks and service isolation', color: 'from-gray-500 to-slate-600' },
