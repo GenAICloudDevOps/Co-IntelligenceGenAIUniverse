@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.database import get_database
+from app.models.user import User
 from app.middleware.auth_middleware import get_current_active_user
 import json
 import os
@@ -13,13 +13,11 @@ router = APIRouter()
 startup_time = time.time()
 
 @router.get("/stats/public")
-async def get_public_system_stats(database = Depends(get_database)):
+async def get_public_system_stats():
     """Get basic system statistics without authentication"""
     try:
-        # Get user count from database
-        user_count_query = "SELECT COUNT(*) as count FROM users"
-        user_result = await database.fetch_one(user_count_query)
-        user_count = user_result['count'] if user_result else 0
+        # Get user count from database using Tortoise ORM
+        user_count = await User.all().count()
         
         # Get apps configuration
         apps_config_path = "/app/config/apps.json"
@@ -88,16 +86,11 @@ async def get_public_system_stats(database = Depends(get_database)):
         }
 
 @router.get("/stats")
-async def get_system_stats(
-    database = Depends(get_database),
-    current_user = Depends(get_current_active_user)
-):
+async def get_system_stats(current_user = Depends(get_current_active_user)):
     """Get comprehensive system statistics"""
     try:
-        # Get user count from database
-        user_count_query = "SELECT COUNT(*) as count FROM users"
-        user_result = await database.fetch_one(user_count_query)
-        user_count = user_result['count'] if user_result else 0
+        # Get user count from database using Tortoise ORM
+        user_count = await User.all().count()
         
         # Get apps configuration
         apps_config_path = "/app/config/apps.json"
@@ -167,7 +160,7 @@ async def get_system_stats(
             "environment": {
                 "deployment": os.getenv("DEPLOYMENT_ENV", "local"),
                 "debug": os.getenv("DEBUG", "true").lower() == "true",
-                "database": "PostgreSQL 15",
+                "database": "PostgreSQL 15 + Tortoise ORM",
                 "backend": "FastAPI + Uvicorn"
             },
             "timestamp": datetime.now().isoformat()

@@ -1,14 +1,14 @@
-# 🚀 Co-Intelligence GenAI Universe V3.0
+# 🚀 Co-Intelligence GenAI Universe V4.0
 
 **Where Human Meets AI Intelligence**
 
-A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture with secure JWT authentication that works seamlessly in both local and cloud environments.
+A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Bedrock - enabling rapid co-intelligence development through scalable architecture with secure JWT authentication and modern async database operations that work seamlessly in both local and cloud environments.
 
 ## 🎯 Platform Features
 
 - **🚀 React Frontend** - Modern dashboard with real-time system metrics and beautiful UI
-- **⚡ FastAPI Backend** - High-performance API with auto-docs
-- **🗄️ PostgreSQL Database** - Reliable data persistence with Alembic migrations for user management
+- **⚡ FastAPI Backend** - High-performance API with auto-docs and native async operations
+- **🗄️ PostgreSQL Database** - Reliable data persistence with Tortoise ORM and Aerich migrations for user management
 - **🎨 HTMX Applications** - Lightning-fast interactive AI applications with gradient themes
 - **🔐 JWT Authentication** - Secure user registration, login, and session management
 - **🐳 Containerized** - Docker-based deployment with health checks and service isolation
@@ -16,6 +16,7 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 - **🧠 Rapid AI Development** - AWS Bedrock integration with rapid HTMX development
 - **🏗️ Modular Architecture** - Scalable, maintainable design with independent components
 - **🤖 Co-Intelligence** - Collaborative intelligence combining human insight and AI
+- **🔄 Modern ORM** - Tortoise ORM for native async database operations and better performance
 
 ## 📸 Platform Screenshots
 
@@ -85,7 +86,7 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 - **Configuration:** Set PUBLIC_IP in .env file
 - **Features:** Production optimization, auto-restart, security headers
 
-## 🔐 Authentication System (New in V3.0)
+## 🔐 Authentication System (Enhanced in V4.0)
 
 ### User Management
 - **🔑 User Registration** - Create new accounts with name, email, username, and password
@@ -97,7 +98,7 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 - **🛡️ JWT Tokens** - Secure JSON Web Token authentication
 - **🔄 Token Passing** - Seamless authentication between React frontend and HTMX apps
 - **⏰ Session Management** - Configurable token expiration and refresh
-- **🗄️ Database Integration** - PostgreSQL with Alembic migrations for user data
+- **🗄️ Database Integration** - PostgreSQL with Tortoise ORM and Aerich migrations for user data
 - **🔐 Password Security** - Secure password hashing and validation
 
 ### Authentication Flow
@@ -214,6 +215,21 @@ After deployment, access your applications at:
 - 📚 API Docs: http://your_ec2_ip:8000/docs
 
 ### Management Commands
+
+#### Database Operations (Aerich):
+```bash
+# Create new migration
+docker-compose exec backend aerich migrate --name "description_of_changes"
+
+# Apply migrations
+docker-compose exec backend aerich upgrade
+
+# Rollback migration
+docker-compose exec backend aerich downgrade
+
+# Show migration history
+docker-compose exec backend aerich history
+```
 
 #### View Logs:
 ```bash
@@ -547,5 +563,17 @@ curl http://your_ec2_ip:8000/api/v1/config              # Cloud
 - ✅ **Secure Token Passing** - Seamless authentication between React frontend and HTMX apps
 - ✅ **Dashboard User Stats** - Real-time user count and system metrics display
 - ✅ **Authentication Middleware** - Comprehensive security layer for all API endpoints
-- ✅ **Database Integration** - PostgreSQL with Alembic migrations for user data
+- ✅ **Database Integration** - PostgreSQL with SQLAlchemy for user data persistence
 - ✅ **Enhanced Security** - Secure credential management and token validation
+
+## 🌟 New in Version 4.0
+
+- ✅ **Tortoise ORM Migration** - Complete migration from SQLAlchemy + Alembic to Tortoise ORM + Aerich
+- ✅ **Native Async Operations** - All database operations are now truly async for better performance
+- ✅ **Modern Database Layer** - Intuitive model definitions with built-in validation and better IDE support
+- ✅ **Aerich Migrations** - Modern migration system designed specifically for async applications
+- ✅ **Enhanced Performance** - Improved connection pooling and reduced overhead
+- ✅ **Better Developer Experience** - Cleaner code, enhanced autocomplete, and intuitive model definitions
+- ✅ **FastAPI Integration** - Native support designed specifically for FastAPI applications
+- ✅ **Database Cleanup** - Removed all legacy Alembic files and references
+- ✅ **Production Ready** - Fully tested migration with backward compatibility for existing data

@@ -3,7 +3,6 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from app.core.config import settings
-from app.database import database
 from app.models.user import User
 
 # Password hashing
@@ -45,68 +44,47 @@ class AuthService:
     @staticmethod
     async def get_user_by_username(username: str) -> Optional[dict]:
         """Get user by username"""
-        query = """
-        SELECT id, name, email, username, hashed_password, created_at, is_active, email_verified
-        FROM users 
-        WHERE username = :username AND is_active = true
-        """
-        result = await database.fetch_one(query=query, values={"username": username})
-        return dict(result) if result else None
+        user = await User.get_by_username(username)
+        return await user.to_dict() if user else None
 
     @staticmethod
     async def get_user_by_email(email: str) -> Optional[dict]:
         """Get user by email"""
-        query = """
-        SELECT id, name, email, username, hashed_password, created_at, is_active, email_verified
-        FROM users 
-        WHERE email = :email AND is_active = true
-        """
-        result = await database.fetch_one(query=query, values={"email": email})
-        return dict(result) if result else None
+        user = await User.get_by_email(email)
+        return await user.to_dict() if user else None
 
     @staticmethod
     async def get_user_by_id(user_id: int) -> Optional[dict]:
         """Get user by ID"""
-        query = """
-        SELECT id, name, email, username, created_at, is_active, email_verified
-        FROM users 
-        WHERE id = :user_id AND is_active = true
-        """
-        result = await database.fetch_one(query=query, values={"user_id": user_id})
-        return dict(result) if result else None
+        user = await User.get_by_id(user_id)
+        return await user.to_dict() if user else None
 
     @staticmethod
     async def create_user(name: str, email: str, username: str, password: str) -> dict:
         """Create a new user"""
         hashed_password = AuthService.get_password_hash(password)
         
-        query = """
-        INSERT INTO users (name, email, username, hashed_password, created_at, is_active, email_verified)
-        VALUES (:name, :email, :username, :hashed_password, NOW(), true, false)
-        RETURNING id, name, email, username, created_at, is_active, email_verified
-        """
-        
-        result = await database.fetch_one(
-            query=query,
-            values={
-                "name": name,
-                "email": email,
-                "username": username,
-                "hashed_password": hashed_password
-            }
+        user = await User.create(
+            name=name,
+            email=email,
+            username=username,
+            hashed_password=hashed_password,
+            is_active=True,
+            email_verified=False
         )
-        return dict(result)
+        
+        return await user.to_dict()
 
     @staticmethod
     async def authenticate_user(username: str, password: str) -> Optional[dict]:
         """Authenticate user with username and password"""
-        user = await AuthService.get_user_by_username(username)
+        user = await User.get_by_username(username)
         if not user:
             return None
         
-        if not AuthService.verify_password(password, user["hashed_password"]):
+        user_dict = await user.to_dict(exclude_password=False)
+        if not AuthService.verify_password(password, user_dict["hashed_password"]):
             return None
         
-        # Remove hashed_password from returned user data
-        user_data = {k: v for k, v in user.items() if k != "hashed_password"}
-        return user_data
+        # Return user data without password
+        return await user.to_dict(exclude_password=True)

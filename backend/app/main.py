@@ -14,7 +14,7 @@ from app.api.v1.bedrock import router as bedrock_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.system import router as system_router
 from app.services.app_manager import AppManager
-from app.database import connect_database, disconnect_database
+from app.database import register_db
 from app.core.config import settings
 
 # Load environment variables
@@ -40,20 +40,12 @@ DEBUG = os.getenv("DEBUG", str(DEBUG)).lower() == "true"
 app = FastAPI(
     title="Co-Intelligence GenAI Platform API",
     description="Environment-aware backend API for AI-powered applications with authentication and dynamic app management",
-    version="2.0.0",
+    version="4.0.0",
     debug=settings.DEBUG
 )
 
-# Database event handlers
-@app.on_event("startup")
-async def startup_event():
-    """Connect to database on startup"""
-    await connect_database()
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Disconnect from database on shutdown"""
-    await disconnect_database()
+# Register Tortoise ORM with FastAPI
+register_db(app)
 
 # Configure CORS with settings
 app.add_middleware(
@@ -77,7 +69,7 @@ async def root():
     """Root endpoint with environment info"""
     return {
         "message": "Co-Intelligence GenAI Platform API", 
-        "version": "3.0.0",
+        "version": "4.0.0",
         "environment": DEPLOYMENT_ENV,
         "host_ip": HOST_IP,
         "public_ip": PUBLIC_IP,

@@ -1,33 +1,41 @@
 import os
-from databases import Database
-from sqlalchemy import create_engine, MetaData
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from tortoise import Tortoise
+from tortoise.contrib.fastapi import register_tortoise
 
-# Database URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://cointelligence_user:secure_password@localhost:5432/cointelligence_db")
+# Database URL from environment - Tortoise ORM requires 'postgres://' scheme
+DATABASE_URL = os.getenv("DATABASE_URL", "postgres://cointelligence_user:secure_password@localhost:5432/cointelligence_db")
 
-# Database instance for async operations
-database = Database(DATABASE_URL)
+# Convert postgresql:// to postgres:// if needed (Tortoise ORM requirement)
+if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgres://", 1)
 
-# SQLAlchemy setup for models (SQLAlchemy 1.4 compatible)
-engine = create_engine(DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://"))
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Tortoise ORM configuration
+TORTOISE_ORM = {
+    "connections": {"default": DATABASE_URL},
+    "apps": {
+        "models": {
+            "models": ["app.models.user", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+}
 
-# Base class for models
-Base = declarative_base()
-metadata = MetaData()
+async def init_db():
+    """Initialize Tortoise ORM"""
+    await Tortoise.init(config=TORTOISE_ORM)
+    await Tortoise.generate_schemas()
+    print("✅ Connected to PostgreSQL database with Tortoise ORM")
 
-# Dependency to get database session
-def get_database():
-    return database
-
-async def connect_database():
-    """Connect to the database"""
-    await database.connect()
-    print("✅ Connected to PostgreSQL database")
-
-async def disconnect_database():
-    """Disconnect from the database"""
-    await database.disconnect()
+async def close_db():
+    """Close Tortoise ORM connections"""
+    await Tortoise.close_connections()
     print("❌ Disconnected from PostgreSQL database")
+
+def register_db(app):
+    """Register Tortoise ORM with FastAPI app"""
+    register_tortoise(
+        app,
+        config=TORTOISE_ORM,
+        generate_schemas=True,
+        add_exception_handlers=True,
+    )
