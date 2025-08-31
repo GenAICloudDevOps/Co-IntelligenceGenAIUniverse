@@ -32,7 +32,7 @@ A modular, production-ready platform built with React, FastAPI, HTMX, and AWS Be
 ![API Documentation](screenshots/3.jpg)
 *Complete JWT authentication system with user registration, login, and secure session management for protected AI applications*
 
-### API Documentation Interactive Swagger UI
+### API Documentation
 ![Authentication System](screenshots/4.jpg)
 *Interactive Swagger UI showing all available API endpoints for Bedrock AI services and system management*
 
